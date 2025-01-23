@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+    <title>{{ repo_name }} Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        :root {
+            --bg-primary: #1a1b1e;
+            --bg-secondary: #24262b;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent-primary: #4a9eff;
+            --accent-secondary: #2d5a8c;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --card-bg: #2d2f36;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .issue-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .issue-card h3 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .issue-number {
+            font-size: 32px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .trend {
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .trend-up {
+            color: var(--danger);
+        }
+
+        .trend-down {
+            color: var(--success);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .chart-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chart-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .code-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        pre code {
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+        }
+
+        .issue-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.1);
+            margin-left: 8px;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .hot-spot-item, .debt-item, .dependency-item, .performance-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .hot-spot-header, .debt-header, .dep-header, .insight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .severity-badge, .hours-badge, .version-badge, .impact-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .severity-high { background: var(--danger); }
+        .severity-medium { background: var(--warning); }
+        .severity-low { background: var(--success); }
+
+        .metric-row {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .recommendation {
+            font-size: 14px;
+            color: var(--text-primary);
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 10px 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 2px;
+        }
+
+        .debt-issues {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .vulnerability-warning {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(220,53,69,0.1);
+            border: 1px solid rgba(220,53,69,0.2);
+            border-radius: 4px;
+            font-size: 13px;
+            color: #ff6b6b;
+        }
+
+        .optimization-suggestion {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(74,158,255,0.1);
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 class="header-title">{{ repo_name }}</h1>
+                <p style="margin: 5px 0 0; font-size: 14px; color: var(--text-secondary);">Generated: {{ timestamp }}</p>
+            </div>
+            <div style="text-align: right; color: var(--text-secondary)">
+                <div>Last analyzed: {{ timestamp }}</div>
+                <div>Branch: master</div>
+            </div>
+        </div>
+
+        <div class="issues-grid">
+            <div class="issue-card">
+                <h3>Performance Issues</h3>
+                <span class="issue-number">{{ performance_issues if performance_issues else 0 }}</span>
+                {% if performance_trend > 0 %}
+                <span class="trend trend-up">↑{{ performance_trend }}% since last commit</span>
+                {% else %}
+                <span class="trend trend-down">↓{{ -performance_trend }}% since last commit</span>
+                {% endif %}
+            </div>
+            <div class="issue-card">
+                <h3>Style Issues</h3>
+                <span class="issue-number">{{ style_issues if style_issues else 0 }}</span>
+                <span class="trend">No changes</span>
+            </div>
+            <div class="issue-card">
+                <h3>Security Issues</h3>
+                <span class="issue-number">{{ security_issues if security_issues else 0 }}</span>
+                <span class="trend">No changes</span>
+            </div>
+            <div class="issue-card">
+                <h3>Documentation Issues</h3>
+                <span class="issue-number">{{ documentation_issues if documentation_issues else 0 }}</span>
+                <span class="trend">No changes</span>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Issue Distribution by Category</h2>
+                    <span class="chart-info">{{ total_issues if total_issues else 0 }} active issues</span>
+                </div>
+                <div id="issueDistChart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Issues Over Time</h2>
+                    <span class="chart-info">Last 30 days</span>
+                </div>
+                <div id="issueTimelineChart"></div>
+            </div>
+        </div>
+
+        <div class="insights-grid">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Hot Spots</h2>
+                    <span class="chart-info">Files requiring immediate attention</span>
+                </div>
+                <div class="hot-spots">
+                    {% for spot in hot_spots %}
+                    <div class="hot-spot-item">
+                        <div class="hot-spot-header">
+                            <span class="file-name">{{ spot.file }}</span>
+                            <span class="severity-badge severity-{{ spot.severity }}">
+                                Priority {{ spot.severity }}
+                            </span>
+                        </div>
+                        <div class="hot-spot-details">
+                            <div class="metric-row">
+                                <span>Complexity: {{ spot.complexity }}</span>
+                                <span>Changes: {{ spot.changes_count }} in last 30 days</span>
+                                <span>Issues: {{ spot.issues_count }}</span>
+                            </div>
+                            <div class="recommendation">
+                                {{ spot.recommendation }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Technical Debt</h2>
+                    <span class="chart-info">Estimated {{ debt_hours }} hours to fix</span>
+                </div>
+                <div class="debt-categories">
+                    {% for category in tech_debt %}
+                    <div class="debt-item">
+                        <div class="debt-header">
+                            <span class="category-name">{{ category.name }}</span>
+                            <span class="hours-badge">{{ category.hours }}h</span>
+                        </div>
+                        <div class="debt-details">
+                            <div class="progress-bar">
+                                <div class="progress" style="width: {{ category.percentage }}%"></div>
+                            </div>
+                            <ul class="debt-issues">
+                                {% for issue in category.issues[:3] %}
+                                <li>{{ issue }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Dependencies</h2>
+                    <span class="chart-info">{{ outdated_deps }} outdated, {{ vulnerable_deps }} vulnerable</span>
+                </div>
+                <div class="dependencies">
+                    {% for dep in dependencies %}
+                    <div class="dependency-item {{ 'vulnerable' if dep.vulnerable }} {{ 'outdated' if dep.outdated }}">
+                        <div class="dep-header">
+                            <span class="dep-name">{{ dep.name }}</span>
+                            <span class="version-badge">
+                                {{ dep.current_version }} → {{ dep.latest_version }}
+                            </span>
+                        </div>
+                        {% if dep.vulnerable %}
+                        <div class="vulnerability-warning">
+                            {{ dep.vulnerability_details }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Performance Insights</h2>
+                    <span class="chart-info">Top optimization opportunities</span>
+                </div>
+                <div class="performance-insights">
+                    {% for insight in performance_insights %}
+                    <div class="performance-item">
+                        <div class="insight-header">
+                            <span class="insight-type">{{ insight.type }}</span>
+                            <span class="impact-badge impact-{{ insight.impact }}">
+                                {{ insight.impact_description }}
+                            </span>
+                        </div>
+                        <div class="insight-details">
+                            <p>{{ insight.description }}</p>
+                            <pre><code class="language-python">{{ insight.code_example }}</code></pre>
+                            <div class="optimization-suggestion">
+                                Suggestion: {{ insight.suggestion }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <div class="chart-header">
+                <h2 class="chart-title">Most Complex Files</h2>
+                <span class="chart-info">Sorted by cyclomatic complexity</span>
+            </div>
+            {% for file in complex_files %}
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0;">
+                    {{ file.name }}
+                    <span class="issue-badge complexity-{{ 'high' if file.complexity > 10 else 'medium' if file.complexity > 5 else 'low' }}">
+                        Complexity: {{ file.complexity }}
+                    </span>
+                </h3>
+                <pre><code class="language-python">{{ file.code }}</code></pre>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script>
+        // Initialize syntax highlighting
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+
+        // Dark theme for Plotly
+        const plotlyLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: {
+                color: '#e0e0e0'
+            },
+            margin: { t: 10, r: 10, b: 40, l: 40 },
+            showlegend: true,
+            legend: {
+                bgcolor: 'rgba(0,0,0,0)',
+                bordercolor: 'rgba(255,255,255,0.1)'
+            },
+            xaxis: {
+                gridcolor: 'rgba(255,255,255,0.1)',
+                zerolinecolor: 'rgba(255,255,255,0.1)'
+            },
+            yaxis: {
+                gridcolor: 'rgba(255,255,255,0.1)',
+                zerolinecolor: 'rgba(255,255,255,0.1)'
+            }
+        };
+
+        // Issue distribution chart
+        const issueData = [
+            { category: 'Performance', count: {{ performance_issues if performance_issues else 0 }} },
+            { category: 'Style', count: {{ style_issues if style_issues else 0 }} },
+            { category: 'Security', count: {{ security_issues if security_issues else 0 }} },
+            { category: 'Documentation', count: {{ documentation_issues if documentation_issues else 0 }} }
+        ];
+
+        Plotly.newPlot('issueDistChart', [{
+            type: 'bar',
+            x: issueData.map(d => d.category),
+            y: issueData.map(d => d.count),
+            marker: {
+                color: ['#4a9eff', '#28a745', '#dc3545', '#ffc107']
+            }
+        }], {...plotlyLayout});
+
+        // Timeline chart
+        const timelineData = {
+            x: ['30d ago', '20d ago', '10d ago', 'now'],
+            y: [100, 95, 105, {{ total_issues if total_issues else 0 }}],
+            type: 'scatter',
+            line: {
+                color: '#4a9eff',
+                width: 3
+            },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(74,158,255,0.1)'
+        };
+
+        Plotly.newPlot('issueTimelineChart', [timelineData], {
+            ...plotlyLayout,
+            yaxis: {
+                ...plotlyLayout.yaxis,
+                title: 'Total Issues'
+            }
+        });
+    </script>
+</body>
+</html>
