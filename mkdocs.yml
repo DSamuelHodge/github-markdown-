@@ -1,0 +1,56 @@
+site_name: GitHub Markdown Analyzer
+site_description: A Python package for analyzing GitHub repositories and generating insightful reports
+site_author: DSamuelHodge
+repo_url: https://github.com/DSamuelHodge/github-markdown-
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: blue grey
+    accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - User Guide:
+    - Installation: guide/installation.md
+    - Quick Start: guide/quickstart.md
+    - Configuration: guide/configuration.md
+  - Features:
+    - Markdown Reports: features/markdown-reports.md
+    - HTML Reports: features/html-reports.md
+    - Code Analysis: features/code-analysis.md
+  - API Reference:
+    - GitHubAnalyzer: api/github-analyzer.md
+    - Configuration: api/configuration.md
+    - Analyzers: api/analyzers.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.append(".")
